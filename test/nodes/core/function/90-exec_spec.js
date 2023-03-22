@@ -719,6 +719,48 @@ describe('exec node', function() {
             });
         });
 
+        it('should handle strings passed to stdin correctly', function(done) {
+            var flow = [{id:"n1",type:"exec",wires:[["n2"],["n3"],["n4"]],command:"more", addpay:false, append:"", useSpawn:"true", oldrc:"false"},
+            {id:"n2", type:"helper"},{id:"n3", type:"helper"},{id:"n4", type:"helper"}];
+            helper.load(execNode, flow, function() {
+                var n1 = helper.getNode("n1");
+                var n2 = helper.getNode("n2");
+                var n3 = helper.getNode("n3");
+                var n4 = helper.getNode("n4");
+                n2.on("input", function(msg) {
+                    try {
+                        msg.should.have.property("payload");
+                        msg.payload.should.be.a.String();
+                        msg.payload.trim().should.be.equal("test");
+                        done();
+                    }
+                    catch(err) { done(err); }
+                });
+                n1.receive({payload:null, stdin:"test"});
+            });
+        });
+
+        it('should handle buffers passed to stdin correctly', function(done) {
+            var flow = [{id:"n1",type:"exec",wires:[["n2"],["n3"],["n4"]],command:"more", addpay:false, append:"", useSpawn:"true", oldrc:"false"},
+            {id:"n2", type:"helper"},{id:"n3", type:"helper"},{id:"n4", type:"helper"}];
+            helper.load(execNode, flow, function() {
+                var n1 = helper.getNode("n1");
+                var n2 = helper.getNode("n2");
+                var n3 = helper.getNode("n3");
+                var n4 = helper.getNode("n4");
+                n2.on("input", function(msg) {
+                    try {
+                        msg.should.have.property("payload");
+                        msg.payload.should.be.a.String();
+                        msg.payload.trim().should.be.equal("test");
+                        done();
+                    }
+                    catch(err) { done(err); }
+                });
+                n1.receive({payload:null, stdin:Buffer.from("test",'utf8')});
+            });
+        });
+
         it('should return an error for a failing command', function(done) {
             var flow;
             var expected;
